@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- USB Class 6: Still Image Capture Devices (PTP/MTP Cameras) -->
+    <usb-device class="6" subclass="1" protocol="1" />
+    <!-- Sony Cameras (Vendor ID 0x054C) -->
+    <usb-device vendor-id="1356" />
+    <!-- Canon Cameras (Vendor ID 0x04A9) -->
+    <usb-device vendor-id="1193" />
+    <!-- Nikon Cameras (Vendor ID 0x04B0) -->
+    <usb-device vendor-id="1200" />
+    <!-- Panasonic Cameras (Vendor ID 0x04DA) -->
+    <usb-device vendor-id="1242" />
+</resources>
+

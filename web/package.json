@@ -1,0 +1,32 @@
+{
+  "name": "snapsync-web",
+  "version": "1.0.0",
+  "private": true,
+  "author": "Sync AI Labs <contact@syncailabs.in>",
+  "homepage": "https://syncailabs.in",
+  "scripts": {
+    "dev": "next dev -H 0.0.0.0 -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@types/qrcode": "^1.5.6",
+    "clsx": "^2.1.0",
+    "lucide-react": "^0.363.0",
+    "next": "^14.2.0",
+    "qrcode": "^1.5.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwind-merge": "^2.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.4.0"
+  }
+}
