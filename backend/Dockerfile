@@ -35,13 +35,9 @@ COPY . /app
 # Ensure uploads and models directory exist
 RUN mkdir -p /app/storage_uploads /app/app/ai_models
 
-# Expose port
+# Expose port (default 8000, dynamically overridden by $PORT on Render/Cloud)
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
-
-# Start production server with Uvicorn worker
-CMD ["gunicorn", "app.main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000"]
+# Start production server with Uvicorn worker binding dynamically to $PORT
+CMD ["sh", "-c", "gunicorn app.main:app -w 2 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:${PORT:-8000}"]
 
