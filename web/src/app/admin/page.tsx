@@ -11,16 +11,12 @@ export default function AdminPage() {
   const fetchOverview = async () => {
     try {
       const data = await api.getAdminOverview().catch(() => ({
-        total_users: 14,
-        active_photographers: 8,
-        total_events: 22,
-        total_photos: 1840,
-        total_storage_bytes: 48200000000,
-        recent_activity: [
-          { id: "1", action: "PHOTO_INGESTED", timestamp: new Date().toISOString(), details: { file: "DSC09241.JPG", camera: "Sony A7 IV" } },
-          { id: "2", action: "EVENT_CREATED", timestamp: new Date(Date.now() - 3600000).toISOString(), details: { event: "Horizon Tech Gala 2026" } },
-          { id: "3", action: "FACE_SEARCH_QUERY", timestamp: new Date(Date.now() - 7200000).toISOString(), details: { matches: 8, latency_ms: 142 } },
-        ]
+        total_users: 1,
+        active_photographers: 1,
+        total_events: 0,
+        total_photos: 0,
+        total_storage_bytes: 0,
+        recent_activity: []
       }));
       setOverview(data);
     } catch (e) {

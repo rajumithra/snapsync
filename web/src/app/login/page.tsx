@@ -8,8 +8,8 @@ import { api, setToken } from "@/lib/api";
 export default function LoginPage() {
   const router = useRouter();
   const [isRegister, setIsRegister] = useState(false);
-  const [email, setEmail] = useState("demo@snapsync.io");
-  const [password, setPassword] = useState("SnapSync2026!");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -144,15 +144,6 @@ export default function LoginPage() {
             className="w-full rounded-xl bg-brand-blue py-3 text-xs font-semibold text-white shadow-lg shadow-brand-blue/20 hover:bg-brand-blueHover disabled:opacity-50 transition-all mt-2"
           >
             {loading ? "Authenticating..." : isRegister ? "Create Account" : "Sign In to Console"}
-          </button>
-
-          <button
-            type="button"
-            onClick={handleDemoSignIn}
-            className="w-full rounded-xl border border-dark-border bg-dark-card py-2.5 text-xs font-semibold text-slate-300 hover:text-white hover:border-brand-blue transition-all flex items-center justify-center gap-2 mt-2"
-          >
-            <Sparkles className="h-3.5 w-3.5 text-brand-cyan" />
-            Quick Demo Sign In (Explore Console)
           </button>
         </form>
 

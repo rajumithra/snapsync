@@ -33,11 +33,11 @@ export default function HomePage() {
           </Link>
 
           <Link
-            href="/gallery/GALA-2026"
+            href="/events"
             className="flex items-center gap-2 rounded-xl border border-dark-border bg-dark-surface px-6 py-3.5 text-sm font-semibold text-slate-200 hover:border-brand-blue hover:text-white transition-all"
           >
             <Sparkles className="h-4 w-4 text-brand-cyan" />
-            Explore Live Guest Gallery (AI Face Search)
+            Explore Live Event Galleries
           </Link>
         </div>
 

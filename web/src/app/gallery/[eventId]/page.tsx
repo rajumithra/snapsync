@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { 
   Camera, Sparkles, Download, Share2, Maximize2, Filter, 
-  RefreshCw, CheckCircle2, Heart, X, Wifi, Upload
+  RefreshCw, CheckCircle2, Heart, X, Wifi, Upload, ArrowLeft, Eye
 } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, formatImageUrl } from "@/lib/api";
 import { useEventWebSocket } from "@/lib/websocket";
 import FaceMatcherModal from "@/components/FaceMatcherModal";
 import UploadPhotosModal from "@/components/UploadPhotosModal";
@@ -28,61 +29,19 @@ export default function GuestLiveGalleryPage() {
     try {
       const eventData = await api.getEvent(eventIdOrCode).catch(() => ({
         id: eventIdOrCode,
-        title: "Horizon Tech Gala 2026",
+        title: "Live Event Gallery",
         event_code: eventIdOrCode,
-        event_date: "2026-11-20",
-        location: "Metropolitan Grand Ballroom",
+        event_date: new Date().toISOString().split("T")[0],
+        location: "Event Venue",
         allow_face_search: true,
       }));
       setEvent(eventData);
 
-      const photosData = await api.getEventPhotos(eventIdOrCode).catch(() => [
-        {
-          id: "1",
-          original_filename: "DSC09241.JPG",
-          public_url_original: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1600&auto=format&fit=crop&q=80",
-          public_url_preview: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1200&auto=format&fit=crop&q=80",
-          public_url_thumbnail: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=500&auto=format&fit=crop&q=80",
-          camera_make: "Sony",
-          camera_model: "ILCE-7M4",
-          iso: 800,
-          shutter_speed: "1/500s",
-          aperture: "f/1.4",
-          focal_length: "85mm",
-          captured_at: new Date().toISOString(),
-        },
-        {
-          id: "2",
-          original_filename: "DSC09242.JPG",
-          public_url_original: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=1600&auto=format&fit=crop&q=80",
-          public_url_preview: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=1200&auto=format&fit=crop&q=80",
-          public_url_thumbnail: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=500&auto=format&fit=crop&q=80",
-          camera_make: "Sony",
-          camera_model: "ILCE-7M4",
-          iso: 1200,
-          shutter_speed: "1/400s",
-          aperture: "f/2.0",
-          focal_length: "35mm",
-          captured_at: new Date().toISOString(),
-        },
-        {
-          id: "3",
-          original_filename: "DSC09243.JPG",
-          public_url_original: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1600&auto=format&fit=crop&q=80",
-          public_url_preview: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200&auto=format&fit=crop&q=80",
-          public_url_thumbnail: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=500&auto=format&fit=crop&q=80",
-          camera_make: "Sony",
-          camera_model: "ILCE-7M4",
-          iso: 640,
-          shutter_speed: "1/800s",
-          aperture: "f/2.8",
-          focal_length: "70mm",
-          captured_at: new Date().toISOString(),
-        }
-      ]);
-      setPhotos(photosData);
+      const photosData = await api.getEventPhotos(eventIdOrCode).catch(() => []);
+      setPhotos(photosData || []);
     } catch (e) {
-      console.error(e);
+      console.error("Error loading gallery:", e);
+      setPhotos([]);
     } finally {
       setLoading(false);
     }
@@ -123,18 +82,23 @@ export default function GuestLiveGalleryPage() {
               <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
                 Live Photo Relay Active
               </span>
+              {event?.event_code && (
+                <span className="rounded-md bg-dark-card border border-dark-border px-2 py-0.5 text-[10px] font-mono font-semibold text-slate-300">
+                  #{event.event_code}
+                </span>
+              )}
             </div>
             <h1 className="text-xl sm:text-2xl font-black text-white mt-1">
               {event?.title || "Live Event Gallery"}
             </h1>
             <p className="text-xs text-slate-400">
-              {event?.location} • {displayedPhotos.length} photos captured
+              {event?.location ? `${event.location} • ` : ""}{photos.length} total photo{photos.length === 1 ? "" : "s"}
             </p>
           </div>
 
           {/* Action CTAs */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Upload Photos from System or Drive */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            {/* Upload Photos */}
             <button
               onClick={() => setIsUploadModalOpen(true)}
               className="flex items-center gap-2 rounded-xl border border-dark-border bg-dark-card px-3.5 py-2.5 text-xs font-semibold text-slate-200 hover:border-brand-blue hover:text-white transition-colors"
@@ -149,7 +113,7 @@ export default function GuestLiveGalleryPage() {
                 onClick={() => setIsFaceModalOpen(true)}
                 className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-cyan-500/20 hover:opacity-95 transition-all"
               >
-                <Sparkles className="h-4 w-4 text-white animate-spin-slow" />
+                <Sparkles className="h-4 w-4 text-white" />
                 Find My Photos (Face Search)
               </button>
             )}
@@ -163,19 +127,75 @@ export default function GuestLiveGalleryPage() {
             </button>
           </div>
         </div>
+
+        {/* Filter Tabs if Face Search Performed */}
+        {matchedPhotos && (
+          <div className="mx-auto max-w-7xl mt-4 pt-3 border-t border-dark-border flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setActiveTab("all")}
+                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  activeTab === "all"
+                    ? "bg-dark-card text-white border border-dark-border"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                All Photos ({photos.length})
+              </button>
+              <button
+                onClick={() => setActiveTab("matched")}
+                className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  activeTab === "matched"
+                    ? "bg-brand-blue text-white shadow-sm"
+                    : "text-slate-400 hover:text-white"
+                }`}
+              >
+                <Sparkles className="h-3 w-3" />
+                My Matched Photos ({matchedPhotos.length})
+              </button>
+            </div>
+
+            <button
+              onClick={() => {
+                setMatchedPhotos(null);
+                setActiveTab("all");
+              }}
+              className="text-xs text-slate-400 hover:text-red-400 transition-colors"
+            >
+              Clear Face Filter
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Main Photo Gallery Wall */}
       <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
-        {displayedPhotos.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-dark-surface border border-dark-border text-slate-400 mb-4">
+        {loading ? (
+          <div className="flex items-center justify-center py-24">
+            <RefreshCw className="h-8 w-8 animate-spin text-brand-blue" />
+          </div>
+        ) : displayedPhotos.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center rounded-2xl border border-dashed border-dark-border bg-dark-surface/40 p-12">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-dark-card border border-dark-border text-brand-cyan mb-4">
               <Camera className="h-8 w-8" />
             </div>
-            <h3 className="text-lg font-bold text-white">Shutter Opening Soon</h3>
+            <h3 className="text-lg font-bold text-white">
+              {activeTab === "matched" ? "No Matched Photos Found" : "No Photos Uploaded Yet"}
+            </h3>
             <p className="text-xs text-slate-400 max-w-sm mt-1">
-              The photographer is connected. Photographs will stream onto this screen live as they are captured.
+              {activeTab === "matched"
+                ? "We didn't detect any photos matching your selfie in this gallery. Photos might still be uploading from the cameras."
+                : "The live relay stream is active. Photos will appear on this wall automatically as they are captured by cameras or uploaded."}
             </p>
+            {activeTab !== "matched" && (
+              <button
+                onClick={() => setIsUploadModalOpen(true)}
+                className="mt-6 flex items-center gap-2 rounded-xl bg-brand-blue px-5 py-2.5 text-xs font-semibold text-white shadow-lg shadow-brand-blue/20 hover:bg-brand-blueHover transition-colors"
+              >
+                <Upload className="h-4 w-4" />
+                Upload First Photos
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
@@ -186,7 +206,7 @@ export default function GuestLiveGalleryPage() {
                 className="group relative aspect-square rounded-2xl overflow-hidden border border-dark-border bg-dark-surface cursor-pointer shadow-md hover:border-brand-blue/60 transition-all"
               >
                 <img
-                  src={photo.public_url_thumbnail || photo.public_url_preview || photo.public_url_original}
+                  src={formatImageUrl(photo.public_url_thumbnail || photo.public_url_preview || photo.public_url_original)}
                   alt={photo.original_filename || "Photo"}
                   className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -205,8 +225,10 @@ export default function GuestLiveGalleryPage() {
                   </span>
                   <div className="flex items-center gap-1.5">
                     <a
-                      href={photo.public_url_original || photo.public_url_preview}
+                      href={formatImageUrl(photo.public_url_original || photo.public_url_preview)}
                       download
+                      target="_blank"
+                      rel="noreferrer"
                       onClick={(e) => e.stopPropagation()}
                       className="rounded-lg bg-white/20 backdrop-blur-sm p-1.5 text-white hover:bg-brand-blue transition-colors"
                       title="Download"
@@ -239,31 +261,23 @@ export default function GuestLiveGalleryPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <img
-              src={selectedPhoto.public_url_preview || selectedPhoto.public_url_original}
+              src={formatImageUrl(selectedPhoto.public_url_preview || selectedPhoto.public_url_original)}
               alt={selectedPhoto.original_filename}
-              className="max-h-[75vh] w-auto rounded-xl object-contain shadow-2xl"
+              className="max-h-[80vh] w-auto rounded-xl object-contain shadow-2xl"
             />
 
-            {/* Bottom Metadata & Download Bar */}
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-4 w-full rounded-xl border border-dark-border bg-dark-surface p-4">
-              <div>
-                <p className="text-sm font-bold text-white">{selectedPhoto.original_filename}</p>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  {selectedPhoto.camera_make} {selectedPhoto.camera_model} • ISO {selectedPhoto.iso || 400} • {selectedPhoto.shutter_speed || "1/500s"} • {selectedPhoto.aperture || "f/2.8"}
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <a
-                  href={selectedPhoto.public_url_original || selectedPhoto.public_url_preview}
-                  download={selectedPhoto.original_filename}
-                  target="_blank"
-                  className="flex items-center gap-2 rounded-xl bg-brand-blue px-4 py-2 text-xs font-bold text-white hover:bg-brand-blueHover transition-colors shadow-lg shadow-brand-blue/20"
-                >
-                  <Download className="h-4 w-4" />
-                  Download High-Res
-                </a>
-              </div>
+            <div className="mt-4 flex items-center justify-between w-full px-2 text-slate-300">
+              <span className="text-sm font-semibold">{selectedPhoto.original_filename}</span>
+              <a
+                href={formatImageUrl(selectedPhoto.public_url_original || selectedPhoto.public_url_preview)}
+                download
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 rounded-xl bg-brand-blue px-4 py-2 text-xs font-bold text-white hover:bg-brand-blueHover transition-colors shadow-lg shadow-brand-blue/20"
+              >
+                <Download className="h-4 w-4" />
+                Download High-Res
+              </a>
             </div>
           </div>
         </div>
@@ -274,6 +288,10 @@ export default function GuestLiveGalleryPage() {
         eventId={eventIdOrCode}
         isOpen={isFaceModalOpen}
         onClose={() => setIsFaceModalOpen(false)}
+        onMatchesFound={(matches) => {
+          setMatchedPhotos(matches);
+          setActiveTab("matched");
+        }}
       />
 
       {/* Manual Upload & Google Drive Modal */}
@@ -286,4 +304,3 @@ export default function GuestLiveGalleryPage() {
     </div>
   );
 }
-

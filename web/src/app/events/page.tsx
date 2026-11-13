@@ -22,33 +22,11 @@ export default function EventsPage() {
 
   const fetchEvents = async () => {
     try {
-      const data = await api.getEvents().catch(() => [
-        {
-          id: "e4b52b21-4d32-443b-8198-44477c7fce8a",
-          title: "Horizon Tech Gala 2026",
-          event_code: "GALA-2026",
-          event_date: "2026-11-20",
-          location: "Metropolitan Grand Ballroom",
-          status: "active",
-          total_photos_count: 142,
-          is_public: true,
-          allow_face_search: true,
-        },
-        {
-          id: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-          title: "Sophia & Alexander Royal Wedding",
-          event_code: "SOPHIA-ALEX-2026",
-          event_date: "2026-11-25",
-          location: "The Grand Estate, Napa Valley",
-          status: "draft",
-          total_photos_count: 0,
-          is_public: true,
-          allow_face_search: true,
-        }
-      ]);
-      setEvents(data);
+      const data = await api.getEvents().catch(() => []);
+      setEvents(data || []);
     } catch (e) {
       console.error(e);
+      setEvents([]);
     } finally {
       setLoading(false);
     }

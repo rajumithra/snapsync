@@ -6,7 +6,7 @@ import {
   Camera, Wifi, CloudUpload, HardDrive, Zap, CheckCircle2, 
   Hourglass, AlertCircle, ArrowUpRight, QrCode, Play, StopCircle, RefreshCw
 } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, formatImageUrl } from "@/lib/api";
 import { useEventWebSocket } from "@/lib/websocket";
 import QRCodeModal from "@/components/QRCodeModal";
 import UploadPhotosModal from "@/components/UploadPhotosModal";
@@ -22,34 +22,30 @@ export default function DashboardPage() {
 
   const loadData = async () => {
     try {
-      const statsData = await api.getDashboardStats().catch(() => ({
-        connection_status: "ONLINE",
-        active_event_title: "Horizon Tech Gala 2026",
-        active_event_id: "GALA-2026",
-        connected_cameras_count: 2,
-        total_photos_received: 142,
-        total_photos_uploaded: 139,
-        pending_uploads: 3,
-        failed_uploads: 0,
-        upload_speed_mbps: 18.4,
-        storage_used_bytes: 1420000000,
-        storage_limit_bytes: 53687091200,
-      }));
-      setStats(statsData);
-
       const events = await api.getEvents().catch(() => []);
       if (events.length > 0) {
         setActiveEvent(events[0]);
         const eventPhotos = await api.getEventPhotos(events[0].id).catch(() => []);
-        setPhotos(eventPhotos);
+        setPhotos(eventPhotos || []);
       } else {
-        setActiveEvent({
-          id: "GALA-2026",
-          title: "Horizon Tech Gala 2026",
-          event_code: "GALA-2026",
-          total_photos_count: 142,
-        });
+        setActiveEvent(null);
+        setPhotos([]);
       }
+
+      const statsData = await api.getDashboardStats().catch(() => ({
+        connection_status: "ONLINE",
+        active_event_title: events.length > 0 ? events[0].title : "No Active Events",
+        active_event_id: events.length > 0 ? events[0].id : null,
+        connected_cameras_count: 0,
+        total_photos_received: 0,
+        total_photos_uploaded: 0,
+        pending_uploads: 0,
+        failed_uploads: 0,
+        upload_speed_mbps: 0,
+        storage_used_bytes: 0,
+        storage_limit_bytes: 53687091200,
+      }));
+      setStats(statsData);
     } catch (e) {
       console.error(e);
     } finally {
@@ -137,14 +133,16 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link
-              href={`/gallery/${activeEvent?.event_code || "GALA-2026"}`}
-              target="_blank"
-              className="flex items-center gap-1.5 rounded-xl border border-dark-border bg-dark-card px-4 py-2.5 text-xs font-semibold text-slate-200 hover:border-brand-blue hover:text-white transition-colors"
-            >
-              Open Live Guest Wall
-              <ArrowUpRight className="h-3.5 w-3.5 text-brand-blue" />
-            </Link>
+            {activeEvent && (
+              <Link
+                href={`/gallery/${activeEvent.event_code || activeEvent.id}`}
+                target="_blank"
+                className="flex items-center gap-1.5 rounded-xl border border-dark-border bg-dark-card px-4 py-2.5 text-xs font-semibold text-slate-200 hover:border-brand-blue hover:text-white transition-colors"
+              >
+                Open Live Guest Wall
+                <ArrowUpRight className="h-3.5 w-3.5 text-brand-blue" />
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -250,13 +248,9 @@ export default function DashboardPage() {
                 className="group relative rounded-xl overflow-hidden border border-dark-border bg-dark-card aspect-square"
               >
                 <img
-                  src={photo.thumbnail_url || photo.public_url_thumbnail || photo.preview_url || "/placeholder.jpg"}
+                  src={formatImageUrl(photo.thumbnail_url || photo.public_url_thumbnail || photo.preview_url || photo.public_url_original)}
                   alt={photo.filename || photo.original_filename || "Photo"}
                   className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  onError={(e) => {
-                    // Fallback to placeholder block
-                    (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=500&auto=format&fit=crop&q=60";
-                  }}
                 />
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-2 text-left">
                   <p className="text-[11px] font-semibold text-white truncate">

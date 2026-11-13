@@ -39,7 +39,7 @@ export default function RootLayout({
             
             <div className="flex items-center gap-6 text-slate-400">
               <Link href="/dashboard" className="hover:text-white transition-colors">Relay Console</Link>
-              <Link href="/gallery/GALA-2026" className="hover:text-white transition-colors">Live Gallery</Link>
+              <Link href="/events" className="hover:text-white transition-colors">Events & Galleries</Link>
               <Link href="/admin" className="hover:text-white transition-colors">Admin Telemetry</Link>
               <a href="http://localhost:8000/docs" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">API Docs</a>
             </div>

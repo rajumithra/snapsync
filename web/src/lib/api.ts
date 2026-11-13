@@ -20,6 +20,10 @@ export const WS_BASE_URL = getWsBaseUrl();
 
 export function formatImageUrl(url?: string | null): string {
   if (!url) return "";
+  if (url.startsWith("/")) {
+    const base = getApiBaseUrl().replace("/api/v1", "");
+    return `${base}${url}`;
+  }
   if (typeof window !== "undefined") {
     const host = window.location.hostname;
     if (host && host !== "localhost" && host !== "127.0.0.1") {
